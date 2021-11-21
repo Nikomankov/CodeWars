@@ -32,7 +32,7 @@ public class Main {
             System.out.println(input + " = " + (repeatCount > 0 ? false : true));
              */
 
-            //Optimised try
+            //Optimal try
             System.out.println(input + " = " + (input.length() == input.toLowerCase().chars().distinct().count()));
 
 
