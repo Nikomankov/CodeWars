@@ -1,4 +1,6 @@
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -32,44 +34,29 @@ public class Main {
 //        int maxOccurences = Integer.parseInt(new Scanner(System.in).nextLine());
 
 
-        String inputString = "1, 2, 5, 6, 10, 586, 1";
-        int[] inputArrInt = Arrays.stream(inputString.split(",\\s")).mapToInt(Integer::parseInt).toArray();;
+        String inputString = "1, 2, 5, 6, 10, 10, 586, 1";
         String maxOccurencesString = "1";
         int maxOccurencesInt = Integer.parseInt(maxOccurencesString);
 
-        List<Integer> numbers = Arrays.asList(1, 2, 1, 3, 4, 4);
-        Set<Integer> duplicated = numbers
-                .stream()
-                .filter(n -> numbers
-                        .stream()
-                        .filter(x -> x == n)
-                        .count() > maxOccurencesInt)
-                .collect(Collectors.toSet());
-        System.out.println(duplicated);
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher = pattern.matcher(inputString);
+        List<Integer> integerList = new ArrayList<Integer>();
+        while (matcher.find()) {
+            integerList.add(Integer.parseInt(matcher.group()));
+        }
+        System.out.println(integerList);
 
-//        System.out.println(deleteNth(inputArrInt, maxOccurencesInt));
+        for(int i = 0; i<integerList.size(); i++){
+            int counterI = 0;
+            for(int j = i+1; j<integerList.size(); j++){
+                if(integerList.get(i).equals(integerList.get(j))){
+                    counterI++;
+                    if(counterI >= maxOccurencesInt){
+                        integerList.remove(j);
+                    }
+                }
+            }
+        }
+        System.out.println(integerList);
     }
-
-//    public static int[] deleteNth(int[] elements, int maxOccurrences) {
-//        Arrays.stream(elements).filter()
-//
-//
-//        //HashMap<Integer, Integer> doubleCount = new HashMap<>();
-//        int[] output;
-//        for(int i = 0; i < elements.length; i++){
-//            int doubleCount = 0;
-//            for(int j = i+1; j <= elements.length; j++){
-//                if(elements[i] == elements[j]){
-//                    doubleCount++;
-//                    if(doubleCount < maxOccurrences+1){
-//                        Arrays.stream(elements).distinct().
-//                    }
-//                }
-//            }
-//        }
-//        for(int element : elements){
-//            do
-//        }
-//        return null;
-//    }
 }
