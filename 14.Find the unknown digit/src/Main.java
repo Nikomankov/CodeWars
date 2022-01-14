@@ -47,9 +47,8 @@ public class Main {
         String[] input = new String[] {"1+1=?", "123*45?=5?088", "-5?*-1=5?", "19--45=5?", "--55*6?=66",
                 "??*??=302?", "?*11=??", "??*1=??", "??+??=??"};
         for(String element : input){
-            System.out.println(solveExpression(element));
+            System.out.println("? = " + solveExpression(element));
         }
-
     }
 
     public static int solveExpression( final String expression ) {
@@ -59,65 +58,68 @@ public class Main {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(expression);
         while(matcher.find()){
-            System.out.println("nice: " + expression);
             int substringStartPos = 0;
             Pattern varPattern = Pattern.compile("\\-?[\\?\\d]+");
-            String firstVar = "";
-            String actionSign = "";
-            String secondVar = "";
+            String firstNumber = "";
+            String opperator = "";
+            String secondNumber = "";
             String input = expression;
             for(int i = 0; i < 2; i++){
                 input = input.substring(substringStartPos,input.length());
                 Matcher varMatcher = varPattern.matcher(input);
                 if(i == 0 && varMatcher.find()){
-                    firstVar = input.substring(varMatcher.start(), varMatcher.end());
+                    firstNumber = input.substring(varMatcher.start(), varMatcher.end());
                     substringStartPos = varMatcher.end() + 1;
-                    actionSign = input.substring(varMatcher.end(),varMatcher.end()+1);
+                    opperator = input.substring(varMatcher.end(),varMatcher.end()+1);
                 } if(i == 1 && varMatcher.find()) {
-                    secondVar = input.substring(varMatcher.start(), varMatcher.end());
+                    secondNumber = input.substring(varMatcher.start(), varMatcher.end());
                     substringStartPos = varMatcher.end() + 1;
                 }
             }
             String answer = input.substring(substringStartPos, input.length());
-            /*System.out.println("firstVar = " + firstVar +
-                    "\nsign = " + actionSign +
-                    "\nsecondVar = " + secondVar +
-                    "\nanswer = " + answer + "\n");*/
             int i = 0;
             boolean matchNum = false;
             while(!matchNum & i<10){
-                switch (actionSign){
+                switch (opperator){
                     case("-"):
-                        matchNum = ((decimalReplace(i, firstVar) - decimalReplace(i, secondVar)) == decimalReplace(i, answer) ? true : false);
-                        missingDigit = (matchNum ? i : -1);
+                        matchNum = ((((decimalReplace(i, firstNumber) - decimalReplace(i, secondNumber)) == decimalReplace(i, answer)) &
+                                (!zeroCheckDig(i, firstNumber)) &
+                                (!zeroCheckDig(i, secondNumber)) &
+                                (!zeroCheckDig(i, answer))) ? true : false);
+                        missingDigit = matchNum ? i : -1;
                         break;
 
                     case("+"):
-                        matchNum = ((decimalReplace(i, firstVar) + decimalReplace(i, secondVar)) == decimalReplace(i, answer) ? true : false);
-                        missingDigit = (matchNum ? i : -1);
+                        matchNum = ((((decimalReplace(i, firstNumber) + decimalReplace(i, secondNumber)) == decimalReplace(i, answer)) &
+                                (!zeroCheckDig(i, firstNumber)) &
+                                (!zeroCheckDig(i, secondNumber)) &
+                                (!zeroCheckDig(i, answer))) ? true : false);
+                        missingDigit = matchNum ? i : -1;
                         break;
 
                     case("*"):
-                        matchNum = ((decimalReplace(i, firstVar) * decimalReplace(i, secondVar)) == decimalReplace(i, answer) ? true : false);
-                        missingDigit = (matchNum ? i : -1);
+                        matchNum = ((((decimalReplace(i, firstNumber) * decimalReplace(i, secondNumber)) == decimalReplace(i, answer)) &
+                                (!zeroCheckDig(i, firstNumber)) &
+                                (!zeroCheckDig(i, secondNumber)) &
+                                (!zeroCheckDig(i, answer))) ? true : false);
+                        missingDigit = matchNum ? i : -1;
                         break;
+
                 }
                 i++;
             }
         }
-
-        //Write code to determine the missing digit or unknown rune
-        //Expression will always be in the form
-        //(number)[opperator](number)=(number)
-        //Unknown digit will not be the same as any other digits used in expression
-
         return missingDigit;
     }
-    public static boolean checkNumber(int decimal){
 
+    //return TRUE if find zero as the first digit
+    static boolean zeroCheckDig(int i, String digit){
+        boolean zeroCheckDigit = digit.replaceAll("\\?", Integer.toString(i)).replaceAll("-", "").charAt(0) == '0' ? true : false;
+        return zeroCheckDigit;
     }
-    public static int decimalReplace(int i, String decimal){
-        int difference = decimal.length() - decimal.replaceAll("\\?","").length();
-        return ((difference > 0) ? Integer.parseInt(decimal.replaceAll("\\?", Integer.toString(i))) : Integer.parseInt(decimal));
+
+    static int decimalReplace(int i, String digit){
+        int difference = digit.length() - digit.replaceAll("\\?","").length();
+        return ((difference > 0) ? Integer.parseInt(digit.replaceAll("\\?", Integer.toString(i))) : Integer.parseInt(digit));
     }
 }
