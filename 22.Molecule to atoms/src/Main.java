@@ -1,10 +1,8 @@
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Main {
     //TASK
@@ -31,51 +29,54 @@ public class Main {
     nested. Index after the braces is optional.
      */
     public static void main(String[] args) {
-        String input = "K4[ON(SO3)2]2";
+        String input = "{((H)2)[O]}";
         getAtoms(input);
-//        while(Pattern.compile("[\\[\\{\\(]+").matcher(input).find()){
-//            input = input.replaceAll("[\\(\\{\\[]{1}[\\w]*[\\]\\}\\)]{1}[0-9]*", "");
-//        }
-//        input = input.replaceAll("[A-Za-z]*[0-9]*[\\)\\}\\]]+", " ");
-        System.out.println(input);
 
     }
+    //My try
     public static Map<String,Integer> getAtoms(String formula) {
+        //Exception
+        String lastIteration;
+        String currentIteration = formula.replaceAll("\\w+", "");
+        do {
+            lastIteration = currentIteration;
+            currentIteration = lastIteration
+                    .replace("[]" , "")
+                    .replace("{}", "")
+                    .replace("()" , "");
+        } while(currentIteration.length() < lastIteration.length());
+        if(!Pattern.compile("[A-Z]{1}[a-z]*").matcher(formula).find() || !currentIteration.equals("")){
+            throw new IllegalArgumentException("wrong formula");
+        }
+
+        //Main logic
         HashMap<String, Integer> output = new HashMap<>();
         List<String> list = Pattern.compile("[A-Z]{1}[a-z]*")
                 .matcher(formula)
                 .results()
                 .map(MatchResult::group)
                 .collect(Collectors.toList());
-        if(list.isEmpty()){
-            throw new IllegalArgumentException("wrong formula");
-        }
-
         for(int i = 0; i < list.size(); i++){
-
-            //Cut left part
+            //Cut off the left side
             formula = formula.substring(formula.indexOf(list.get(i))+list.get(i).length());
             //Removing closed brackets
-            String clearFormula = formula;
-            while(Pattern.compile("[\\[\\{\\(]+").matcher(clearFormula).find()){
-                clearFormula = clearFormula.replaceAll("[\\(\\{\\[]{1}[\\w]*[\\]\\}\\)]{1}[0-9]*", "");
-            }
+            String clearFormula;
+            String currentIteration1 = formula;
+            do {
+                clearFormula = currentIteration1;
+                currentIteration1 = clearFormula
+                        .replaceAll("[\\(\\{\\[]{1}[\\w]*[\\]\\}\\)]{1}[0-9]*", "");
+            } while(currentIteration1.length() < clearFormula.length());
             //Change unnecessary molecules and closing brackets to spaces
-            clearFormula = clearFormula.replaceAll("[A-Za-z]*[0-9]*[\\)\\}\\]]+", " ");
-
-
-            int[] arrayInt = Arrays
-                    .stream(clearFormula
-                    .split("\\s"))
-                    .mapToInt((String s) -> Integer.parseInt(s.trim()))
-                    .toArray();
-            String[] array = clearFormula.split("\\s");
-            Integer count = 1;
-            for(int s : arrayInt){
-                count *= s;
-            }
-//            count *=Integer.parseInt(array[0]);
+            String[] array = clearFormula
+                    .replaceAll("[\\)\\}\\]]+", " ")
+                    .replaceAll("[A-Za-z]+[0-9]*", "")
+                    .split("\\s");
+            //Counting coefficient
+            int count = 1;
+            for(String s : array) count *= s.equals("") ? 1 :Integer.parseInt(s);
             System.out.println("I = " + list.get(i) + ", count = " + count);
+            //Write on the map
             output.put(list.get(i), output.containsKey(list.get(i)) ? output.get(list.get(i)) + count : count);
         }
 
