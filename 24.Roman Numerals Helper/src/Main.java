@@ -30,35 +30,73 @@ public class Main {
     public static void main(String[] args) {
         int input = 1999;
         String inputRoman  = "MMMXCV";
-        System.out.println(toRoman(input));
-        System.out.println(fromRoman(inputRoman));
+
+        long timeToRomanMy = System.nanoTime();
+        toRoman(input);
+        timeToRomanMy = System.nanoTime() - timeToRomanMy;
+
+        long timeToRomanAnother = System.nanoTime();
+        toRomanAnother(input);
+        timeToRomanAnother = System.nanoTime() - timeToRomanAnother;
+
+        long timeFromRomanMy = System.nanoTime();
+        fromRoman(inputRoman);
+        timeFromRomanMy = System.nanoTime() - timeFromRomanMy;
+
+        long timeFromRomanAnother = System.nanoTime();
+        fromRomanAnother(inputRoman);
+        timeFromRomanAnother = System.nanoTime() - timeFromRomanAnother;
+
+
+        System.out.println("To roman: " +
+                "\nMy try = " + timeToRomanMy +
+                "\nAnother = " + timeToRomanAnother +
+                "\n---------------" +
+                "\nFrom roman: " +
+                "\nMy try = " + timeFromRomanMy +
+                "\nAnother = " + timeFromRomanAnother);
+
+//        System.out.println(fromRoman(inputRoman));
     }
 
     //My try
     public static String toRoman(int n) {
         String output = "";
+        String[] romanByTensArray  = {"M","DC","LX","VI"};
+        int posArray = 0;
         int discarded = 0;
-        for(int i = 1000; i >= 1; i = i/10){
-            int consideredNum = (n - discarded)/i;
-            output = switch (i){
-                case 1000 -> "M".repeat(consideredNum);
-                case 100 -> conversionToRoman(consideredNum,"M", "D", "C");
-                case 10 -> conversionToRoman(consideredNum, "C", "L", "X");
-                case 1 -> conversionToRoman(consideredNum, "X", "V", "I");
-                default -> throw new IllegalStateException("Error");
+        for(int i = 1000; i >= 1; i=i/10){
+//            System.out.println("Array = " + romanByTensArray[posArray] + ", i = " + i);
+            //Check for degree 10
+            if(n/i == 0){
+                posArray++;
+                continue;
+            }
+            //Define and convert thousands
+            if(i == 1000){
+                output = romanByTensArray[posArray].repeat(n/i);
+                discarded = n/i*1000;
+                posArray++;
+                continue;
+            }
+            //Convert 100, 10, 1
+            int consideredNum = (n - discarded)/i;  //Discard converted numbers
+            int divResultBy5 = (consideredNum + 1) % 5 == 0 ? (consideredNum + 1)/5 : 0;
+            String one = Character.toString(romanByTensArray[posArray].charAt(1));
+            String five = Character.toString(romanByTensArray[posArray].charAt(0));
+            String tens = i == 100 ? Character.toString(romanByTensArray[posArray-1].charAt(0)) :
+                    Character.toString(romanByTensArray[posArray-1].charAt(1));
+            output += switch (divResultBy5){
+                case 1 -> one + five;
+                case 2 -> one + tens;
+                default -> five.repeat(consideredNum / 5) + one.repeat(consideredNum % 5);
             };
+            posArray++;
             discarded += consideredNum * i;
+//            System.out.println("consideredNum = " + consideredNum + ", divResultBy5" + divResultBy5);
+//            System.out.println("one = " + one + ", five = " + five + ", tens = " + tens);
+//            System.out.println("output = " + output);
         }
-        return output;
-    }
-    private static String conversionToRoman(int num, String tens, String five, String one){
-        String output;
-        int divResultBy5 = (num + 1) % 5 == 0 ? (num + 1)/5 : 0;
-        output = switch (divResultBy5){
-            case 1 -> one + five;
-            case 2 -> one + tens;
-            default -> five.repeat(num / 5) + one.repeat(num % 5);
-        };
         return output;
     }
 
@@ -110,4 +148,36 @@ public class Main {
         }
         return output;
     }
+
+    //Optimal try
+    private static final String[] ROMAN_NUMBERS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+    private static final int[] ARABIC_NUMBERS = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+
+    public static String toRomanAnother(int n) {
+        int remainingValue = n;
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < ARABIC_NUMBERS.length; i++) {
+            while (remainingValue >= ARABIC_NUMBERS[i]) {
+                remainingValue -= ARABIC_NUMBERS[i];
+                result.append(ROMAN_NUMBERS[i]);
+            }
+        }
+
+        return result.toString();
+    }
+
+    public static int fromRomanAnother(String romanNumeral) {
+        String remainingValue = romanNumeral;
+        int result = 0;
+
+        for(int i = 0; i<ROMAN_NUMBERS.length; i++) {
+            while(remainingValue.startsWith(ROMAN_NUMBERS[i])) {
+                remainingValue = remainingValue.substring(ROMAN_NUMBERS[i].length(), remainingValue.length());
+                result += ARABIC_NUMBERS[i];
+            }
+        }
+        return result;
+    }
 }
+
