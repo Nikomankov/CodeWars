@@ -64,7 +64,7 @@ public class Main {
         while(bits.charAt(k) == '0'){
             k++;
         }
-        bits = bits.substring(k, bits.length());
+        bits = bits.substring(k);
         k = bits.length()-1;
         while (bits.charAt(k) == '0'){
             k--;
@@ -82,7 +82,7 @@ public class Main {
             if(chars[i] != c){
                 timeUnit = timeUnit == 0 ? midTimeUnit : timeUnit;
                 timeUnit = midTimeUnit < timeUnit & midTimeUnit != 0 ? midTimeUnit : timeUnit;
-                maxTimeUnit = midTimeUnit > maxTimeUnit ? midTimeUnit : maxTimeUnit;
+                maxTimeUnit = Math.max(midTimeUnit,maxTimeUnit);
                 c = chars[i];
                 midTimeUnit = 1;
             } else {
@@ -92,7 +92,7 @@ public class Main {
             System.out.println("timeUnit = " + timeUnit + ", midTimeUnit = " +midTimeUnit + ", maxTimeUnit = " + maxTimeUnit);
         }
         timeUnit = timeUnit == 0 ? midTimeUnit : timeUnit;
-        maxTimeUnit = midTimeUnit > maxTimeUnit ? midTimeUnit : maxTimeUnit;
+        maxTimeUnit = Math.max(midTimeUnit,maxTimeUnit);
 
         System.out.println("timeUnit = " + timeUnit + ", midTimeUnit = " +midTimeUnit + ", maxTimeUnit = " + maxTimeUnit);
         if(timeUnit == maxTimeUnit){
@@ -120,7 +120,7 @@ public class Main {
     }
 
     public static String decodeMorse(String morseCode) {
-        return stream(morseCode.trim().split("   "))
+        return stream(morseCode.trim().split("\\s".repeat(3)))
                 .map(word -> stream(word.split(" ")).map(MorseCode::get).collect(joining()))
                 .collect(joining(" "));
     }
@@ -130,13 +130,13 @@ public class Main {
     //Optimal try
     public static String decodeBitsOptimal(String bits) {
         bits = bits.replaceAll("^0*|0*$", "");
-        int timeUnit = Pattern.compile("0+|1+")
-                .matcher(bits)
+        int timeUnit = Pattern.compile("0+|1+") //create a repeat pattern 0 or 1
+                .matcher(bits)                  //find matches
                 .results()
-                .map(MatchResult::group)
-                .mapToInt(String::length)
-                .min()
-                .orElseGet(bits::length);
+                .map(MatchResult::group)        //grouping
+                .mapToInt(String::length)       //count lengths
+                .min()                          //find minimal
+                .orElseGet(bits::length);       //or take the length of the input string
         return bits.replace("111".repeat(timeUnit), "-")
                 .replace("000".repeat(timeUnit), " ")
                 .replace("1".repeat(timeUnit), ".")
